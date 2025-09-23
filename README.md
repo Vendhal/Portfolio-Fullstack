@@ -1,4 +1,4 @@
-# Full-Stack Portfolio (React + Spring Boot + MySQL)
+ï»¿# Full-Stack Portfolio (React + Spring Boot + MySQL)\n\n![CI](https://github.com/Vendhal/Portfolio-Fullstack/actions/workflows/ci.yml/badge.svg)
 
 A modern, interactive portfolio for a 3-member team. Frontend in React, backend in Spring Boot, MySQL database, containerized with Docker Compose, and CI with GitHub Actions. Optional: Deploy frontend to GitHub Pages, backend via Docker Compose on a server.
 
@@ -50,9 +50,9 @@ See `.env.example` for common variables used by Docker Compose:
 
 
 ## Endpoints
-- `GET /api/team` – list team members
-- `GET /api/projects` – list projects
-- `POST /api/contact` – create a contact message
+- `GET /api/team` â€“ list team members
+- `GET /api/projects` â€“ list projects
+- `POST /api/contact` â€“ create a contact message
 
 ## Notes
 - Sample seed data is auto-created at startup if tables are empty.
@@ -78,3 +78,4 @@ See `.env.example` for common variables used by Docker Compose:
    - `docker compose logs -f backend` to tail the Spring Boot service.
    - `docker compose exec db mysql -u$DB_USER -p$DB_PASSWORD $DB_NAME` for manual DB access.
    - Data is persisted in the `db_data` volume; remove it intentionally with `docker volume rm` if you want a clean seed.
+\n## Continuous Integration\nThe GitHub Actions workflow in .github/workflows/ci.yml runs on every push and pull request to main.\nIt builds the Spring Boot backend with Maven (including tests) and compiles the Vite frontend to catch regressions before deploys.\n
