@@ -1,0 +1,15 @@
+﻿# Node dependencies
+frontend/node_modules/
+backend/node_modules/
+
+# Build outputs
+frontend/dist/
+backend/target/
+
+# Environment files
+.env
+.env.local
+
+# IDE configs
+.vscode/
+.idea/
