@@ -1,17 +1,16 @@
 services:
   db:
-    image: mysql:8.0
+    image: postgres:16
     container_name: portfolio_db
     environment:
-      MYSQL_DATABASE: ${DB_NAME:-portfolio}
-      MYSQL_USER: ${DB_USER:-portfolio}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+      POSTGRES_DB: ${DB_NAME:-portfolio}
+      POSTGRES_USER: ${DB_USER:-portfolio}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/postgresql/data
       - ./db:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -23,8 +22,8 @@ services:
       db:
         condition: service_healthy
     environment:
-      DB_HOST: db
-      DB_PORT: 3306
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: ${DB_PORT:-5432}
       DB_NAME: ${DB_NAME:-portfolio}
       DB_USER: ${DB_USER:-portfolio}
       DB_PASSWORD: ${DB_PASSWORD:-secret}
@@ -39,4 +38,3 @@ services:
 
 volumes:
   db_data:
-
