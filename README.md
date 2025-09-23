@@ -1,4 +1,4 @@
-﻿# Full-Stack Portfolio (React + Spring Boot + MySQL)\n\n![CI](https://github.com/Vendhal/Portfolio-Fullstack/actions/workflows/ci.yml/badge.svg)
+﻿# Full-Stack Portfolio (React + Spring Boot + MySQL)![CI](https://github.com/Vendhal/Portfolio-Fullstack/actions/workflows/ci.yml/badge.svg)
 
 A modern, interactive portfolio for a 3-member team. Frontend in React, backend in Spring Boot, MySQL database, containerized with Docker Compose, and CI with GitHub Actions. Optional: Deploy frontend to GitHub Pages, backend via Docker Compose on a server.
 
