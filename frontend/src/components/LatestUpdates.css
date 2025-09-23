@@ -1,0 +1,81 @@
+.latest {
+  margin: 64px 0 48px;
+  position: relative;
+}
+.latest-header {
+  max-width: 480px;
+  margin-bottom: 28px;
+}
+.latest-kicker {
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(200, 210, 255, 0.72);
+  display: inline-block;
+}
+.latest-title {
+  margin: 6px 0 8px;
+  font-size: 28px;
+}
+.latest-sub {
+  margin: 0;
+  color: var(--muted);
+}
+.latest-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+.latest-card {
+  position: relative;
+  background: rgba(15, 20, 40, 0.82);
+  border: 1px solid rgba(98, 115, 255, 0.28);
+  border-radius: 16px;
+  padding: 18px 20px 24px;
+  box-shadow: 0 16px 36px rgba(20, 26, 60, 0.45);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(24px);
+  animation: latest-rise 0.7s ease forwards;
+  animation-delay: calc(0.2s + var(--card-index, 0) * 0.09s);
+}
+.latest-card header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+.latest-card .meta {
+  margin: 6px 0 12px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: rgba(190, 205, 255, 0.68);
+  text-transform: uppercase;
+}
+.latest-card .blurb {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.card-glow {
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(circle at 20% 20%, rgba(140,160,255,0.45), rgba(60,40,140,0));
+  opacity: 0.6;
+  animation: latest-orbit 12s linear infinite;
+}
+.latest-card:hover .card-glow {
+  opacity: 0.9;
+  animation-duration: 6s;
+}
+@keyframes latest-rise {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes latest-orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@media (max-width: 640px) {
+  .latest {
+    margin-top: 40px;
+  }
+}

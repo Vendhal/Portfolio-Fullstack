@@ -1,0 +1,8 @@
+# Tasks queued for implementation:
+# 1. Latest Updates: add "What's New" section to home page. (done)
+# 2. Accessibility: focus outlines, reduced-motion toggle for effects. (done)
+# 3. SEO/Meta: clean titles, favicon, OG/Twitter cards, 404 route. (done)
+# 4. Backend caching: add lightweight cache/ETag to /api/projects. (done)
+# 5. Performance checks: lazy-load images, preconnect to assets, run audit.
+# 6. Deployment prep: .env, docker-compose.prod.yml, README deploy steps.
+
