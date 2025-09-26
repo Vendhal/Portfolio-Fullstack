@@ -79,4 +79,5 @@ See `.env.example` for common variables used by Docker Compose:
    - `docker compose exec db mysql -u$DB_USER -p$DB_PASSWORD $DB_NAME` for manual DB access.
    - Data is persisted in the `db_data` volume; remove it intentionally with `docker volume rm` if you want a clean seed.
 Continuous Integration:
-The GitHub Actions workflow in .github/workflows/ci.yml runs on every push and pull request to main.\nIt builds the Spring Boot backend with Maven (including tests) and compiles the Vite frontend to catch regressions before deploys.
+The GitHub Actions workflow in .github/workflows/ci.yml runs on every push and pull request to main.
+It builds the Spring Boot backend with Maven (including tests) and compiles the Vite frontend to catch regressions before deploys.
