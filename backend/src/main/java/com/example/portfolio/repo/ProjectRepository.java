@@ -8,5 +8,7 @@ import java.util.Optional;
 
 public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> findByOwnerSlugOrderByTitleAsc(String slug);
+    List<Project> findByOwnerIdOrderByCreatedAtDesc(Long ownerId);
+    Optional<Project> findByIdAndOwnerId(Long id, Long ownerId);
     Optional<Project> findByTitleIgnoreCase(String title);
 }

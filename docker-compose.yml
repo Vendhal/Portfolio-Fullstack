@@ -3,9 +3,11 @@ services:
     image: postgres:16
     container_name: portfolio_db
     environment:
-      POSTGRES_DB: ${DB_NAME:-portfolio}
-      POSTGRES_USER: ${DB_USER:-portfolio}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+      POSTGRES_DB: ${DB_NAME:-postgres}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-Sunnysandy@1}
+    ports:
+      - "5433:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./db:/docker-entrypoint-initdb.d:ro
@@ -24,9 +26,11 @@ services:
     environment:
       DB_HOST: ${DB_HOST:-db}
       DB_PORT: ${DB_PORT:-5432}
-      DB_NAME: ${DB_NAME:-portfolio}
-      DB_USER: ${DB_USER:-portfolio}
-      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      DB_NAME: ${DB_NAME:-postgres}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-Sunnysandy@1}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-1234567890123456}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-3600000}
 
   frontend:
     build: ./frontend

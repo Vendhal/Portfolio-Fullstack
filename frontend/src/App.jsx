@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState, lazy, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import { useSettings } from './state/SettingsContext.jsx'
+import { useAuth } from './state/AuthContext.jsx'
 
 const Particles = lazy(() => import('./components/Particles.jsx'))
 const LatestUpdates = lazy(() => import('./components/LatestUpdates.jsx'))
@@ -9,6 +10,9 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
 const PROJECT_PLACEHOLDER = 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80'
 
 function Header() {
+  const { isAuthenticated, auth, logout } = useAuth()
+  const firstName = auth?.profile?.name ? auth.profile.name.split(' ')[0] : null
+
   return (
     <header className="header">
       <h1>Our Team Portfolio</h1>
@@ -16,6 +20,13 @@ function Header() {
         <a href="#team">Team</a>
         <a href="#projects">Projects</a>
         <a href="#contact">Contact</a>
+        {isAuthenticated && firstName && <span className="nav-identity">Hi, {firstName}</span>}
+        <Link to="/dashboard">{isAuthenticated ? 'Dashboard' : 'Login'}</Link>
+        {isAuthenticated && (
+          <button type="button" className="link-button" onClick={logout}>
+            Logout
+          </button>
+        )}
       </nav>
     </header>
   )

@@ -1,4 +1,4 @@
-# Full-Stack Portfolio (React + Spring Boot + PostgreSQL)
+﻿# Full-Stack Portfolio (React + Spring Boot + PostgreSQL)
 
 ![CI](https://github.com/Vendhal/Portfolio-Fullstack/actions/workflows/ci.yml/badge.svg)
 
@@ -46,6 +46,7 @@ See .env.example for common variables used by Docker Compose:
 - BACKEND_PORT, FRONTEND_PORT
 - SPRING_PROFILES_ACTIVE
 - VITE_API_BASE_URL (optional; baked into the frontend during build)
+- HOST_DB_PORT (host port for Postgres; defaults to 5433)
 
 ## Endpoints
 - GET /api/team - list team members
@@ -53,7 +54,7 @@ See .env.example for common variables used by Docker Compose:
 - POST /api/contact - create a contact message
 
 ## Notes
-- Sample seed data is auto-created at startup if tables are empty.
+- Initial sample data ships in the Flyway migrations; adjust or replace as needed.
 - CORS is enabled permissively for simplicity; tighten for production.
 - You can swap PostgreSQL with a managed service; just adjust env vars.
 
@@ -76,4 +77,14 @@ See .env.example for common variables used by Docker Compose:
 
 ## Continuous Integration
 The GitHub Actions workflow in .github/workflows/ci.yml runs on every push and pull request to main. It builds the Spring Boot backend with Maven (including tests) and compiles the Vite frontend to catch regressions before deploys.
+
+
+
+### Database Migrations
+The backend uses Flyway migrations (see backend/src/main/resources/db/migration). Bring services up to run them automatically. If you need a clean database locally, use docker compose down -v before restarting.
+
+
+
+
+
 

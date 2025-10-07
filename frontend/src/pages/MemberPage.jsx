@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import Particles from '../components/Particles.jsx'
 import { useSettings } from '../state/SettingsContext.jsx'
@@ -9,26 +9,27 @@ const PROJECT_PLACEHOLDER = 'https://images.unsplash.com/photo-1498050108023-c52
 export default function MemberPage() {
   const { slug } = useParams()
   const [member, setMember] = useState(null)
-  const [loading, setLoading] = useState(true)
   const [projects, setProjects] = useState([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const { effectsOn, bgSpeed, bgDensity } = useSettings()
 
   useEffect(() => {
+    let ignore = false
     setLoading(true)
     fetch(API_BASE + '/team/slug/' + slug)
       .then(r => { if (!r.ok) throw new Error('Not found'); return r.json() })
-      .then(data => { setMember(data); document.title = data.name + ' - Team Portfolio' })
-      .catch(e => setError(e.message))
-      .finally(() => setLoading(false))
-  }, [slug])
-
-  useEffect(() => {
-    if (!slug) return
-    fetch(API_BASE + '/projects?memberSlug=' + slug)
-      .then(r => (r.ok ? r.json() : []))
-      .then(setProjects)
-      .catch(() => setProjects([]))
+      .then(detail => {
+        if (ignore) return
+        const profile = detail?.profile ?? null
+        setMember(profile)
+        setProjects(detail?.projects ?? [])
+        document.title = (profile?.name || 'Team Member') + ' - Team Portfolio'
+        setError(null)
+      })
+      .catch(err => { if (!ignore) setError(err.message) })
+      .finally(() => { if (!ignore) setLoading(false) })
+    return () => { ignore = true }
   }, [slug])
 
   const featured = useMemo(() => projects.slice(0, 3), [projects])
@@ -51,17 +52,17 @@ export default function MemberPage() {
         return [
           { role: 'Frontend Lead', org: 'KL University Innovation Lab', period: '2024 - Present', desc: 'Designs and ships React + Vite experiences with a focus on accessibility and polish.' },
           { role: 'Student Developer', org: 'Hackathons & Clubs', period: '2023 - 2024', desc: 'Delivered winning prototypes using TypeScript, Tailwind, and Firebase across campus competitions.' },
-        ];
+        ]
       case 'jayram-reddy':
         return [
           { role: 'Backend Engineer', org: 'KL University Innovation Lab', period: '2024 - Present', desc: 'Designs resilient APIs and observability pipelines for campus initiatives.' },
           { role: 'Systems Volunteer', org: 'Hackathons & Clubs', period: '2023 - 2024', desc: 'Maintained infra for student hackathons and automated CI for teams.' },
-        ];
+        ]
       case 'sai-sandeep':
         return [
           { role: 'Full-Stack Developer', org: 'KL University Innovation Lab', period: '2024 - Present', desc: 'Builds end-to-end experiences from Spring Boot APIs to Vite frontends.' },
           { role: 'Community Lead', org: 'React KL Chapter', period: '2023 - Present', desc: 'Runs weekly code labs focused on accessibility, performance, and DX best practices.' },
-        ];
+        ]
       default:
         return []
     }
@@ -187,5 +188,3 @@ export default function MemberPage() {
     </div>
   )
 }
-
-

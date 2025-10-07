@@ -1,7 +1,7 @@
 package com.example.portfolio.web;
 
-import com.example.portfolio.model.Project;
 import com.example.portfolio.service.ProjectService;
+import com.example.portfolio.web.dto.ProjectDto;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -29,11 +29,11 @@ public class ProjectsController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Project>> all(
+    public ResponseEntity<List<ProjectDto>> all(
             @RequestParam(name = "memberSlug", required = false) String memberSlug,
             @RequestHeader(value = HttpHeaders.IF_NONE_MATCH, required = false) String ifNoneMatch
     ) {
-        List<Project> projects = projectService.getProjects(memberSlug);
+        List<ProjectDto> projects = projectService.getProjects(memberSlug);
         String eTag = generateEtag(projects);
 
         if (ifNoneMatch != null && ifNoneMatch.equals(eTag)) {
@@ -49,9 +49,9 @@ public class ProjectsController {
                 .body(projects);
     }
 
-    private String generateEtag(List<Project> projects) {
+    private String generateEtag(List<ProjectDto> projects) {
         String signature = projects.stream()
-                .map(p -> (p.getId() != null ? p.getId() : 0L) + "|" + p.getTitle() + "|" + (p.getOwner() != null ? p.getOwner().getSlug() : ""))
+                .map(p -> (p.id() != null ? p.id() : 0L) + "|" + p.title() + "|" + (p.owner() != null ? p.owner().slug() : ""))
                 .collect(Collectors.joining("::"));
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-1");
