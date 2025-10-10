@@ -10,7 +10,7 @@ describe('Background', () => {
   it('should render background container', () => {
     render(<Background />)
     
-    const container = screen.getByRole('generic', { hidden: true })
+    const container = document.querySelector('.bg-effects')
     expect(container).toBeInTheDocument()
     expect(container).toHaveClass('bg-effects')
   })
@@ -39,7 +39,7 @@ describe('Background', () => {
   it('should have aria-hidden attribute', () => {
     render(<Background />)
     
-    const container = screen.getByRole('generic', { hidden: true })
+    const container = document.querySelector('.bg-effects')
     expect(container).toHaveAttribute('aria-hidden')
   })
 
