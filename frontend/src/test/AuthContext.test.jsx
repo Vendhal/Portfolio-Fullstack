@@ -52,7 +52,7 @@ function TestComponent() {
         onClick={() => register({
           email: 'new@example.com',
           password: 'password',
-          name: 'New User'
+          displayName: 'New User'
         })}
       >
         Register

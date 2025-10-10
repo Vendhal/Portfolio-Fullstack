@@ -42,7 +42,8 @@ public class CacheConfig implements CachingConfigurer {
         );
         
         // Enable dynamic cache creation for any additional caches needed
-        cacheManager.setAllowNullValues(false);
+        // Allow null values in cache to handle cases where users are not found
+        cacheManager.setAllowNullValues(true);
         
         logger.info("Cache manager initialized successfully");
         return cacheManager;

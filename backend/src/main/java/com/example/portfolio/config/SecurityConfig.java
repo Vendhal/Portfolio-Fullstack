@@ -44,8 +44,7 @@ public class SecurityConfig {
                 .accessDeniedHandler(jwtAccessDeniedHandler)
             )
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/auth/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/refresh").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/debug/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/team/**", "/api/team/**").permitAll()

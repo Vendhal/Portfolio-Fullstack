@@ -22,9 +22,10 @@ export interface LoginCredentials {
 }
 
 export interface RegisterData {
-  username: string;
   email: string;
   password: string;
+  displayName?: string;
+  slug?: string;
 }
 
 export interface AuthContextType {

@@ -3,6 +3,7 @@ import type { AuthContextType, User, LoginCredentials, RegisterData } from '@/ty
 
 interface AuthData {
   token: string;
+  refreshToken: string;
   expiresAt: number;
   profile: User | null;
 }
@@ -10,6 +11,7 @@ interface AuthData {
 interface AuthPayload {
   token?: string;
   accessToken?: string;
+  refreshToken?: string;
   expiresAt?: number;
   profile?: User;
 }
@@ -22,7 +24,7 @@ function loadStoredAuth(): AuthData | null {
     const raw = localStorage.getItem('auth')
     if (!raw) return null
     const parsed = JSON.parse(raw)
-    if (!parsed.token || !parsed.expiresAt) return null
+    if (!parsed.token || !parsed.refreshToken || !parsed.expiresAt) return null
     if (parsed.expiresAt <= Date.now()) {
       localStorage.removeItem('auth')
       return null
@@ -38,6 +40,7 @@ function normaliseAuthPayload(payload: AuthPayload | null): AuthData | null {
   if (!payload) return null
   return {
     token: payload.token || payload.accessToken || '',
+    refreshToken: payload.refreshToken || '',
     expiresAt: payload.expiresAt || 0,
     profile: payload.profile || null,
   }
@@ -107,7 +110,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Auto-refresh token before expiry
   useEffect(() => {
-    if (!auth?.token || !auth?.expiresAt) return
+    if (!auth?.token || !auth?.refreshToken || !auth?.expiresAt) return
 
     const msUntilExpiry = auth.expiresAt - Date.now()
     const refreshThreshold = 5 * 60 * 1000 // 5 minutes before expiry
@@ -119,9 +122,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
           const response = await fetch(`${API_BASE}/v1/auth/refresh`, {
             method: 'POST',
             headers: { 
-              'Authorization': `Bearer ${auth.token}`,
               'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({ refreshToken: auth.refreshToken })
           })
           
           if (response.ok) {
@@ -142,7 +145,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
     
     return undefined
-  }, [auth?.token, auth?.expiresAt, applyAuth, clearAuth])
+  }, [auth?.token, auth?.refreshToken, auth?.expiresAt, applyAuth, clearAuth])
 
   const postCredentials = useCallback(async (path: string, body: any): Promise<any> => {
     const res = await fetch(API_BASE + path, {
@@ -227,8 +230,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [auth?.token, clearAuth])
 
   const refreshToken = useCallback(async (): Promise<void> => {
-    if (!auth?.token) {
-      throw new Error('No token to refresh')
+    if (!auth?.refreshToken) {
+      throw new Error('No refresh token available')
     }
     
     try {
@@ -236,9 +239,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await fetch(API_BASE + '/v1/auth/refresh', {
         method: 'POST',
         headers: { 
-          'Authorization': `Bearer ${auth.token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({ refreshToken: auth.refreshToken })
       })
       
       if (!response.ok) {
@@ -254,7 +257,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       clearAuth()
       throw err
     }
-  }, [auth?.token, applyAuth, clearAuth])
+  }, [auth?.refreshToken, applyAuth, clearAuth])
 
   const authorizedFetch = useCallback(async (url: string, options: RequestInit = {}): Promise<Response> => {
     if (!auth?.token) {

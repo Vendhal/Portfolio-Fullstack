@@ -1,15 +1,19 @@
 package com.example.portfolio.security;
 
 import com.example.portfolio.config.SecurityConfig;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -22,12 +26,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * - Authentication manager setup
  * - Public vs protected endpoint access
  */
-@SpringBootTest
-@AutoConfigureWebMvc
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestPropertySource(properties = "spring.datasource.url=jdbc:h2:mem:testdb")
 class SecurityConfigurationTest {
 
-    @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private WebApplicationContext context;
 
     @Autowired
     private SecurityConfig securityConfig;
@@ -37,6 +43,14 @@ class SecurityConfigurationTest {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
+    }
 
     @Test
     void shouldHavePasswordEncoderConfigured() {
