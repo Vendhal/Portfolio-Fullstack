@@ -43,10 +43,7 @@ COPY --from=build /app/dist .
 # Copy optimized nginx configuration
 COPY nginx-prod.conf /etc/nginx/conf.d/default.conf
 
-# Add non-root user
-RUN addgroup -g 1001 -S nginx && adduser -u 1001 -S nginx -G nginx
-
-# Set proper permissions
+# Set proper permissions for existing nginx user
 RUN chown -R nginx:nginx /usr/share/nginx/html && \
     chown -R nginx:nginx /var/cache/nginx && \
     chown -R nginx:nginx /var/log/nginx && \
