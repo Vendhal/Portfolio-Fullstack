@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview --port 5173",
     "test": "vitest",
+    "test:ci": "vitest run",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
     "generate-sitemap": "node scripts/generate-sitemap.js",
