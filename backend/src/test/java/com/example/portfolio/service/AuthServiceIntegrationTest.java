@@ -48,7 +48,7 @@ class AuthServiceIntegrationTest {
 
         AuthResponse response = authService.register(request);
 
-        assertThat(response.token()).isNotBlank();
+        assertThat(response.accessToken()).isNotBlank();
         assertThat(response.expiresAt()).isPositive();
         assertThat(response.profile()).isNotNull();
         assertThat(response.profile().slug()).isEqualTo("new-user");
@@ -78,7 +78,7 @@ class AuthServiceIntegrationTest {
 
         AuthResponse response = authService.login(new AuthRequest("second.user@test.local", "StrongPass!1"));
 
-        assertThat(response.token()).isNotBlank();
+        assertThat(response.accessToken()).isNotBlank();
         assertThat(response.profile()).isNotNull();
         assertThat(response.profile().name()).isEqualTo("Second User");
         assertThat(response.profile().slug()).isNotBlank();

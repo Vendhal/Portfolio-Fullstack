@@ -7,6 +7,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -20,7 +21,7 @@ public class JwtService {
     private final JwtProperties properties;
     private Key signingKey;
 
-    public JwtService(JwtProperties properties) {
+    public JwtService(@Qualifier("jwtProperties") JwtProperties properties) {
         this.properties = properties;
     }
 

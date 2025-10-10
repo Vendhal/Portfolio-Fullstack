@@ -1,7 +1,10 @@
 ﻿import { useEffect, useState, lazy, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import { useSettings } from './state/SettingsContext.jsx'
-import { useAuth } from './state/AuthContext.jsx'
+import { useAuth } from './state/AuthContext.tsx'
+import PWAInstallPrompt from './components/PWAInstallPrompt.jsx'
+import SEOHead from './components/SEOHead.tsx'
+import { generateWebsiteSchema, generateOrganizationSchema } from './utils/seoSchemas.ts'
 
 const Particles = lazy(() => import('./components/Particles.jsx'))
 const LatestUpdates = lazy(() => import('./components/LatestUpdates.jsx'))
@@ -10,8 +13,9 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
 const PROJECT_PLACEHOLDER = 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80'
 
 function Header() {
-  const { isAuthenticated, auth, logout } = useAuth()
-  const firstName = auth?.profile?.name ? auth.profile.name.split(' ')[0] : null
+  const { authState, logout } = useAuth()
+  const { isAuthenticated, user } = authState || {}
+  const firstName = user?.name ? user.name.split(' ')[0] : null
 
   return (
     <header className="header">
@@ -166,8 +170,23 @@ function Contact() {
 export default function App() {
   useEffect(() => { document.title = 'Team Portfolio'; }, []);
   const { effectsOn, bgSpeed, bgDensity } = useSettings()
+  
+  // SEO Schema for homepage
+  const combinedSchema = [
+    generateWebsiteSchema(),
+    generateOrganizationSchema()
+  ]
+  
   return (
     <div className="container">
+      <SEOHead
+        title="Team Portfolio | Full-Stack Developers"
+        description="Meet our talented team of full-stack developers. Explore our projects, expertise, and latest updates."
+        url="https://example.com"
+        schema={combinedSchema}
+        keywords={['portfolio', 'team', 'developers', 'react', 'typescript', 'full-stack', 'projects']}
+      />
+      
       {effectsOn && (
         <Suspense fallback={null}>
           <Particles speed={bgSpeed} density={bgDensity} enabled={effectsOn} />
@@ -181,6 +200,7 @@ export default function App() {
         <Contact />
       </main>
       <footer className="footer">Copyright {new Date().getFullYear()} Our Team</footer>
+      <PWAInstallPrompt />
     </div>
   )
 }

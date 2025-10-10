@@ -1,4 +1,8 @@
 package com.example.portfolio.web.dto;
 
-public record AuthResponse(String token, long expiresAt, ProfileSummaryDto profile) {
-}
+public record AuthResponse(
+    String accessToken, 
+    String refreshToken,
+    long expiresAt, 
+    ProfileSummaryDto profile
+) {}

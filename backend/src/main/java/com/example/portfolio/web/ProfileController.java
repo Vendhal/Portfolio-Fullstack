@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/profile/me")
+@RequestMapping("/api/v1/profile/me")
 public class ProfileController {
     private final CurrentUserService currentUserService;
     private final ProfileService profileService;
@@ -33,6 +33,7 @@ public class ProfileController {
 
     @GetMapping
     public ProfileDetailDto me() {
+        System.out.println("DEBUG: ProfileController.me() called");
         Profile profile = currentUserService.requireProfileWithDetails();
         List<ExperienceDto> experiences = experienceService.list(profile);
         List<ProjectDto> projects = projectService.listOwned(profile);

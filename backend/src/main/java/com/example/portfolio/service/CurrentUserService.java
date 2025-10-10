@@ -3,7 +3,6 @@ package com.example.portfolio.service;
 import com.example.portfolio.model.Profile;
 import com.example.portfolio.model.UserAccount;
 import com.example.portfolio.repo.ProfileRepository;
-import com.example.portfolio.repo.UserAccountRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -13,11 +12,11 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @Service
 public class CurrentUserService {
-    private final UserAccountRepository userRepository;
+    private final CachedUserService cachedUserService;
     private final ProfileRepository profileRepository;
 
-    public CurrentUserService(UserAccountRepository userRepository, ProfileRepository profileRepository) {
-        this.userRepository = userRepository;
+    public CurrentUserService(CachedUserService cachedUserService, ProfileRepository profileRepository) {
+        this.cachedUserService = cachedUserService;
         this.profileRepository = profileRepository;
     }
 
@@ -27,8 +26,12 @@ public class CurrentUserService {
             throw new ResponseStatusException(UNAUTHORIZED, "Authentication required");
         }
         String email = authentication.getName();
-        return userRepository.findByEmail(email.toLowerCase())
+        return cachedUserService.findByEmail(email.toLowerCase())
                 .orElseThrow(() -> new ResponseStatusException(UNAUTHORIZED, "User not found"));
+    }
+
+    public UserAccount getCurrentUser() {
+        return requireUser();
     }
 
     public Profile requireProfile() {

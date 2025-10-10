@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/contact")
-public class ContactController {
+public class ContactController extends BaseVersionedController {
     private final ContactMessageRepository repo;
     public ContactController(ContactMessageRepository repo) { this.repo = repo; }
 

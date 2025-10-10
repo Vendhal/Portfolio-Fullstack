@@ -1,0 +1,44 @@
+{
+  "name": "Team Portfolio",
+  "short_name": "Portfolio",
+  "description": "Portfolio website showcasing our development team, projects, and expertise",
+  "version": "1.0.0",
+  "author": "Team Portfolio",
+  "keywords": ["portfolio", "team", "developers", "projects", "React", "TypeScript"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/team/portfolio.git"
+  },
+  "homepage": "https://example.com",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "scripts": {
+    "generate-sitemap": "node scripts/generate-sitemap.js"
+  },
+  "seo": {
+    "defaultTitle": "Team Portfolio | Full-Stack Developers",
+    "titleTemplate": "%s | Team Portfolio",
+    "defaultDescription": "Meet our talented team of full-stack developers. Explore our projects, expertise, and contact information.",
+    "siteUrl": "https://example.com",
+    "defaultImage": "/images/og-default.jpg",
+    "twitterUsername": "@teamportfolio",
+    "organization": {
+      "name": "Team Portfolio",
+      "url": "https://example.com",
+      "logo": "/icons/icon-512x512.png"
+    }
+  },
+  "features": [
+    "Responsive Design",
+    "Progressive Web App",
+    "Offline Support",
+    "Performance Monitoring",
+    "TypeScript",
+    "Testing Suite",
+    "Error Boundaries",
+    "JWT Authentication",
+    "SEO Optimized"
+  ]
+}

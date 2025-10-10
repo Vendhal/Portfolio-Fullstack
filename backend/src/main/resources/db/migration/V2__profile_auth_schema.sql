@@ -53,10 +53,13 @@ CREATE TABLE profile_project (
     updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- seed admin account
-INSERT INTO app_user (email, password_hash, role)
-VALUES ('admin@portfolio.local', '$2a$10$7Q7gBzix8VGo1XHo9dZYhOQb1t/F7fs/3Gzdh0dX8GZFODdgNpTi2', 'ADMIN');
+-- SECURITY NOTE: This migration creates sample accounts for development only.
+-- In production, admin accounts should be created through secure registration API
+-- or via environment-specific initialization scripts with strong passwords.
 
+-- Create sample user accounts for development (these profiles can register via API)
+-- Password for all demo accounts is: "demo123" (should be changed immediately)
+-- This is BCrypt hash for "demo123" - CHANGE IN PRODUCTION!
 WITH member_source AS (
     SELECT m.*, CONCAT(m.slug, '@portfolio.local') AS generated_email
     FROM member m
@@ -64,7 +67,7 @@ WITH member_source AS (
 member_users AS (
     INSERT INTO app_user (email, password_hash, role)
     SELECT generated_email,
-           '$2a$10$7Q7gBzix8VGo1XHo9dZYhOQb1t/F7fs/3Gzdh0dX8GZFODdgNpTi2',
+           '$2a$10$7Q7gBzix8VGo1XHo9dZYhOQb1t/F7fs/3Gzdh0dX8GZFODdgNpTi2', -- BCrypt hash for "demo123"
            'USER'
     FROM member_source
     ORDER BY id

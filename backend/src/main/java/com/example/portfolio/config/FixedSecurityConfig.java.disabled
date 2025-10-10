@@ -1,0 +1,84 @@
+package com.example.portfolio.config;
+
+import com.example.portfolio.security.JwtAuthenticationFilter;
+import com.example.portfolio.security.UserAccountDetailsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+// @Configuration
+// @EnableMethodSecurity
+// @EnableWebSecurity
+// @Order(1)
+public class FixedSecurityConfig {
+    private static final Logger logger = LoggerFactory.getLogger(FixedSecurityConfig.class);
+    
+    private final JwtAuthenticationFilter jwtFilter;
+    private final UserAccountDetailsService userDetailsService;
+    private final PasswordEncoder passwordEncoder;
+
+    public FixedSecurityConfig(JwtAuthenticationFilter jwtFilter, UserAccountDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+        this.jwtFilter = jwtFilter;
+        this.userDetailsService = userDetailsService;
+        this.passwordEncoder = passwordEncoder;
+        logger.info("====== FIXED SECURITY CONFIG CONSTRUCTOR CALLED ======");
+        System.out.println("====== FIXED SECURITY CONFIG CONSTRUCTOR CALLED (SYSOUT) ======");
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        logger.info("====== FIXED SECURITY CONFIG LOADING ======");
+        System.out.println("====== FIXED SECURITY CONFIG LOADING (SYSOUT) ======");
+        
+        http
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(authz -> authz
+                // Permit all authentication endpoints
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/debug/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
+                // Permit public endpoints
+                .requestMatchers(HttpMethod.GET, "/api/v1/team/**", "/api/team/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/projects/**", "/api/projects/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/contact").permitAll()
+                // Require authentication for profile endpoints
+                .requestMatchers("/api/v1/profile/**").authenticated()
+                // All other requests need authentication
+                .anyRequest().authenticated()
+            )
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+            
+        logger.info("====== FIXED SECURITY CONFIG COMPLETE ======");
+        System.out.println("====== FIXED SECURITY CONFIG COMPLETE (SYSOUT) ======");
+        return http.build();
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return provider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+}

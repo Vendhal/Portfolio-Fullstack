@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useAuth } from '../state/AuthContext.jsx'
+import { useAuth } from '../state/AuthContext.tsx'
+import { formatRange } from '../utils/dateUtils.js'
 
 const emptyExperience = {
   title: '',
@@ -57,7 +58,8 @@ async function readJson(response) {
 const toDateInputValue = (value) => (value ? value : '')
 
 export default function Dashboard() {
-  const { auth, isAuthenticated, login, register, logout, authorizedFetch, setProfileSummary } = useAuth()
+  const { authState, login, register, logout, deleteAccount, authorizedFetch, setProfileSummary } = useAuth()
+  const { user, isAuthenticated } = authState || {}
 
   const [mode, setMode] = useState('login')
   const [loginForm, setLoginForm] = useState({ email: '', password: '' })
@@ -65,7 +67,7 @@ export default function Dashboard() {
   const [authError, setAuthError] = useState(null)
 
   const [profileData, setProfileData] = useState(null)
-  const [profileForm, setProfileForm] = useState(() => toProfileForm(auth?.profile))
+  const [profileForm, setProfileForm] = useState(() => toProfileForm(user))
   const [profileMessage, setProfileMessage] = useState(null)
   const [profileError, setProfileError] = useState(null)
   const [loadingProfile, setLoadingProfile] = useState(false)
@@ -81,7 +83,7 @@ export default function Dashboard() {
   const experiences = profileData?.experiences ?? []
   const projects = profileData?.projects ?? []
 
-  const firstName = useMemo(() => auth?.profile?.name ? auth.profile.name.split(' ')[0] : null, [auth?.profile?.name])
+  const firstName = useMemo(() => user?.name ? user.name.split(' ')[0] : null, [user?.name])
 
   const resetExperienceForm = useCallback(() => {
     setExperienceForm(emptyExperience)
@@ -125,14 +127,14 @@ export default function Dashboard() {
   }, [isAuthenticated, loadProfile])
 
   useEffect(() => {
-    setProfileForm(toProfileForm(auth?.profile))
-  }, [auth?.profile])
+    setProfileForm(toProfileForm(user))
+  }, [user])
 
   const handleLogin = async (event) => {
     event.preventDefault()
     setAuthError(null)
     try {
-      await login(loginForm.email.trim(), loginForm.password)
+      await login({ email: loginForm.email.trim(), password: loginForm.password })
       setLoginForm({ email: '', password: '' })
     } catch (err) {
       setAuthError(err.message)
@@ -342,13 +344,6 @@ export default function Dashboard() {
     }
   }
 
-  const formatRange = (start, end, current) => {
-    if (!start && !end) return current ? 'Current' : ''
-    const startLabel = start || 'Unknown'
-    const endLabel = current ? 'Present' : (end || 'Unknown')
-    return `${startLabel} – ${endLabel}`
-  }
-
   if (!isAuthenticated) {
     return (
       <div className="container" style={{ paddingTop: 40 }}>
@@ -405,7 +400,21 @@ export default function Dashboard() {
           <h2>Portfolio Dashboard</h2>
           {firstName && <p className="muted">Welcome back, {firstName}!</p>}
         </div>
-        <button type="button" className="logout-btn" onClick={logout}>Log out</button>
+        <div className="header-actions">
+          <button type="button" className="logout-btn" onClick={logout}>Log out</button>
+          <button 
+            type="button" 
+            className="delete-account-btn" 
+            onClick={() => {
+              if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                deleteAccount().catch(err => console.error('Delete account failed:', err))
+              }
+            }}
+            style={{marginLeft: '10px', backgroundColor: '#dc3545', color: 'white'}}
+          >
+            Delete Account
+          </button>
+        </div>
       </header>
 
       {profileError && <p className="error" role="alert">{profileError}</p>}

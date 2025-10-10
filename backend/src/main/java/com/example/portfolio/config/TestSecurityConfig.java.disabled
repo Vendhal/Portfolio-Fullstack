@@ -1,0 +1,48 @@
+package com.example.portfolio.config;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@EnableWebSecurity
+public class TestSecurityConfig {
+    private static final Logger logger = LoggerFactory.getLogger(TestSecurityConfig.class);
+    
+    public TestSecurityConfig() {
+        logger.debug("====== TEST SECURITY CONFIG CONSTRUCTOR CALLED ======");
+        logger.info("====== TEST SECURITY CONFIG CONSTRUCTOR CALLED (INFO) ======");
+        logger.warn("====== TEST SECURITY CONFIG CONSTRUCTOR CALLED (WARN) ======");
+        logger.error("====== TEST SECURITY CONFIG CONSTRUCTOR CALLED (ERROR) ======");
+        System.out.println("====== TEST SECURITY CONFIG CONSTRUCTOR CALLED (SYSOUT) ======");
+        System.err.println("====== TEST SECURITY CONFIG CONSTRUCTOR CALLED (SYSERR) ======");
+    }
+
+    @Bean
+    public SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
+        logger.debug("====== TEST SECURITY FILTER CHAIN BEAN CREATION ======");
+        logger.info("====== TEST SECURITY FILTER CHAIN BEAN CREATION (INFO) ======");
+        logger.warn("====== TEST SECURITY FILTER CHAIN BEAN CREATION (WARN) ======");
+        logger.error("====== TEST SECURITY FILTER CHAIN BEAN CREATION (ERROR) ======");
+        System.out.println("====== TEST SECURITY FILTER CHAIN BEAN CREATION (SYSOUT) ======");
+        System.err.println("====== TEST SECURITY FILTER CHAIN BEAN CREATION (SYSERR) ======");
+        
+        http
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                .anyRequest().permitAll()  // Allow all requests for testing
+            );
+            
+        logger.debug("====== TEST SECURITY CONFIGURATION COMPLETE ======");
+        logger.info("====== TEST SECURITY CONFIGURATION COMPLETE (INFO) ======");
+        logger.warn("====== TEST SECURITY CONFIGURATION COMPLETE (WARN) ======");
+        logger.error("====== TEST SECURITY CONFIGURATION COMPLETE (ERROR) ======");
+        System.out.println("====== TEST SECURITY CONFIGURATION COMPLETE (SYSOUT) ======");
+        System.err.println("====== TEST SECURITY CONFIGURATION COMPLETE (SYSERR) ======");
+        return http.build();
+    }
+}

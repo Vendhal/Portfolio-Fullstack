@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/team")
-public class TeamController {
+public class TeamController extends BaseVersionedController {
     private final ProfileRepository profileRepository;
     private final ExperienceService experienceService;
     private final ProjectService projectService;

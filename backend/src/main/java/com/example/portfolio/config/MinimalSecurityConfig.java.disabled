@@ -1,0 +1,44 @@
+package com.example.portfolio.config;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@EnableWebSecurity
+public class MinimalSecurityConfig {
+    private static final Logger logger = LoggerFactory.getLogger(MinimalSecurityConfig.class);
+    
+    public MinimalSecurityConfig() {
+        logger.error("====== MINIMAL SECURITY CONFIG CONSTRUCTOR CALLED ======");
+        System.out.println("====== MINIMAL SECURITY CONFIG CONSTRUCTOR CALLED (SYSOUT) ======");
+        System.err.println("====== MINIMAL SECURITY CONFIG CONSTRUCTOR CALLED (SYSERR) ======");
+    }
+
+    @Bean
+    public SecurityFilterChain minimalSecurityFilterChain(HttpSecurity http) throws Exception {
+        logger.error("====== MINIMAL CONFIGURING SECURITY FILTER CHAIN ======");
+        System.out.println("====== MINIMAL CONFIGURING SECURITY FILTER CHAIN (SYSOUT) ======");
+        System.err.println("====== MINIMAL CONFIGURING SECURITY FILTER CHAIN (SYSERR) ======");
+        
+        http
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/v1/debug/**").permitAll()  // Allow debug endpoints
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
+                .anyRequest().authenticated()
+            );
+            
+        logger.error("====== MINIMAL SECURITY CONFIGURATION COMPLETE ======");
+        System.out.println("====== MINIMAL SECURITY CONFIGURATION COMPLETE (SYSOUT) ======");
+        System.err.println("====== MINIMAL SECURITY CONFIGURATION COMPLETE (SYSERR) ======");
+        return http.build();
+    }
+}

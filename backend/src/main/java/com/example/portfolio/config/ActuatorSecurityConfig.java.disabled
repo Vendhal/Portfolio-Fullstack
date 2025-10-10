@@ -1,0 +1,36 @@
+package com.example.portfolio.config;
+
+/**
+ * Security configuration for Spring Boot Actuator endpoints.
+ * Updated for Spring Boot 3.3.2 compatibility.
+ */
+
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@Order(1) // Higher precedence than main security config
+public class ActuatorSecurityConfig {
+
+    @Bean
+    public SecurityFilterChain actuatorSecurityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher(EndpointRequest.toAnyEndpoint())
+            .authorizeHttpRequests(authz -> authz
+                // Public health endpoint for load balancers
+                .requestMatchers(EndpointRequest.to("health")).permitAll()
+                // Secure all other actuator endpoints - require authentication
+                .requestMatchers(EndpointRequest.toAnyEndpoint()).authenticated()
+            )
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .csrf(csrf -> csrf.disable())
+            .httpBasic(httpBasic -> {}); // Enable HTTP Basic for actuator endpoints
+
+        return http.build();
+    }
+}

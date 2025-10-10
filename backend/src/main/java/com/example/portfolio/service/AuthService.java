@@ -24,24 +24,30 @@ import static org.springframework.http.HttpStatus.*;
 @Service
 public class AuthService {
     private final UserAccountRepository userRepository;
+    private final CachedUserService cachedUserService;
     private final ProfileRepository profileRepository;
     private final ProfileService profileService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthService(UserAccountRepository userRepository,
+                       CachedUserService cachedUserService,
                        ProfileRepository profileRepository,
                        ProfileService profileService,
                        PasswordEncoder passwordEncoder,
                        JwtService jwtService,
-                       AuthenticationManager authenticationManager) {
+                       AuthenticationManager authenticationManager,
+                       RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
+        this.cachedUserService = cachedUserService;
         this.profileRepository = profileRepository;
         this.profileService = profileService;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @Transactional
@@ -102,18 +108,56 @@ public class AuthService {
         }
 
         String authenticatedEmail = auth.getName();
-        UserAccount account = userRepository.findByEmail(authenticatedEmail.toLowerCase(Locale.ENGLISH))
+        System.err.println("DEBUG: Request email: " + email);
+        System.err.println("DEBUG: Authenticated email: " + authenticatedEmail);
+        System.err.println("DEBUG: Normalized authenticated email: " + authenticatedEmail.toLowerCase(Locale.ENGLISH));
+        
+        UserAccount account = cachedUserService.findByEmail(authenticatedEmail.toLowerCase(Locale.ENGLISH))
                 .orElseThrow(() -> new ResponseStatusException(UNAUTHORIZED, "Invalid credentials"));
         return buildAuthResponse(account, null);
+    }
+
+    public AuthResponse refreshToken(RefreshTokenRequest request) {
+        return refreshTokenService.validateRefreshToken(request.refreshToken())
+                .map(refreshToken -> {
+                    UserAccount userAccount = refreshToken.getUserAccount();
+                    String newAccessToken = jwtService.generateToken(userAccount);
+                    String newRefreshToken = refreshTokenService.rotateRefreshToken(refreshToken);
+                    long expiresAt = jwtService.extractExpiration(newAccessToken).getTime();
+                    
+                    ProfileSummaryDto profile = profileRepository.findByUserId(userAccount.getId())
+                            .map(ProfileMapper::toSummary)
+                            .orElse(null);
+                    
+                    return new AuthResponse(newAccessToken, newRefreshToken, expiresAt, profile);
+                })
+                .orElseThrow(() -> new ResponseStatusException(UNAUTHORIZED, "Invalid refresh token"));
+    }
+
+    public void logout(UserAccount userAccount) {
+        refreshTokenService.revokeAllUserTokens(userAccount);
+    }
+
+    @Transactional
+    public void deleteAccount(UserAccount userAccount) {
+        // First revoke all refresh tokens
+        refreshTokenService.revokeAllUserTokens(userAccount);
+        
+        // Delete user profile if exists (cascade should handle related data)
+        profileRepository.findByUserId(userAccount.getId()).ifPresent(profileRepository::delete);
+        
+        // Finally delete the user account
+        userRepository.delete(userAccount);
     }
 
     private AuthResponse buildAuthResponse(UserAccount account, Profile profile) {
         ProfileSummaryDto summary = profile != null
                 ? ProfileMapper.toSummary(profile)
                 : profileRepository.findByUserId(account.getId()).map(ProfileMapper::toSummary).orElse(null);
-        String token = jwtService.generateToken(account);
-        long expiresAt = jwtService.extractExpiration(token).getTime();
-        return new AuthResponse(token, expiresAt, summary);
+        String accessToken = jwtService.generateToken(account);
+        String refreshToken = refreshTokenService.createRefreshToken(account);
+        long expiresAt = jwtService.extractExpiration(accessToken).getTime();
+        return new AuthResponse(accessToken, refreshToken, expiresAt, summary);
     }
 
     private void applyProfileFields(Profile profile, RegisterRequest request) {
