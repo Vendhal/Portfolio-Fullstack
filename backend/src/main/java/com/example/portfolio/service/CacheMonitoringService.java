@@ -45,14 +45,17 @@ public class CacheMonitoringService {
     /**
      * Clear specific cache
      * @param cacheName Name of cache to clear
+     * @return true if cache existed and was cleared, false if cache didn't exist
      */
-    public void clearCache(String cacheName) {
+    public boolean clearCache(String cacheName) {
         Cache cache = cacheManager.getCache(cacheName);
         if (cache != null) {
             cache.clear();
             logger.info("Cache '{}' cleared successfully", cacheName);
+            return true;
         } else {
             logger.warn("Cache '{}' not found", cacheName);
+            return false;
         }
     }
     
@@ -79,9 +82,19 @@ public class CacheMonitoringService {
     
     private int getCacheSize(Cache cache) {
         try {
-            // This is a simple approximation since ConcurrentMapCache doesn't expose size directly
-            // In production, you might want to use a more sophisticated cache implementation
-            return 0; // ConcurrentMapCache doesn't provide size info
+            // For ConcurrentMapCache, we can access the underlying store
+            if (cache instanceof org.springframework.cache.concurrent.ConcurrentMapCache) {
+                org.springframework.cache.concurrent.ConcurrentMapCache concurrentMapCache = 
+                    (org.springframework.cache.concurrent.ConcurrentMapCache) cache;
+                return concurrentMapCache.getNativeCache().size();
+            }
+            // For other cache implementations, try to get size
+            Object nativeCache = cache.getNativeCache();
+            if (nativeCache instanceof java.util.concurrent.ConcurrentMap) {
+                return ((java.util.concurrent.ConcurrentMap<?, ?>) nativeCache).size();
+            }
+            logger.debug("Cache type {} doesn't support size reporting", cache.getClass().getSimpleName());
+            return 0;
         } catch (Exception e) {
             logger.debug("Could not get cache size for {}: {}", cache.getName(), e.getMessage());
             return -1;

@@ -23,11 +23,26 @@ public class CacheManagementController {
 
     @PostMapping("/clear/{cacheName}")
     public ResponseEntity<Map<String, String>> clearCache(@PathVariable String cacheName) {
-        cacheMonitoringService.clearCache(cacheName);
-        return ResponseEntity.ok(Map.of(
-            "message", "Cache cleared successfully",
-            "cache", cacheName
-        ));
+        try {
+            boolean cacheExists = cacheMonitoringService.clearCache(cacheName);
+            if (!cacheExists) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Cache not found",
+                    "message", "Cache '" + cacheName + "' does not exist",
+                    "cache", cacheName
+                ));
+            }
+            return ResponseEntity.ok(Map.of(
+                "message", "Cache cleared successfully",
+                "cache", cacheName
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", "Cache error",
+                "message", "Failed to clear cache: " + e.getMessage(),
+                "cache", cacheName
+            ));
+        }
     }
 
     @PostMapping("/clear-all")

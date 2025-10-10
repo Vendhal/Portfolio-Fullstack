@@ -83,7 +83,7 @@ class SecurityConfigurationTest {
 
     @Test
     void shouldAllowAccessToPublicHealthEndpoint() throws Exception {
-        mockMvc.perform(get("/api/v1/health"))
+        mockMvc.perform(get("/actuator/health"))
                 .andExpect(status().isOk());
     }
 

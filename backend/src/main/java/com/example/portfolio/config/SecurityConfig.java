@@ -7,18 +7,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-// @Configuration
-// @EnableWebSecurity
+@Configuration
+@EnableWebSecurity
 public class SecurityConfig {
     
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
@@ -45,11 +47,12 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/refresh").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/debug/**").permitAll()
+                .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login").permitAll() // Allow both GET and POST for method not allowed testing
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/team/**", "/api/team/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/projects/**", "/api/projects/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/contact").permitAll()
+                .requestMatchers("/api/v1/debug/**").authenticated() // Debug endpoints should require authentication
                 .requestMatchers("/api/v1/profile/**").authenticated()
                 .anyRequest().authenticated()
             )
