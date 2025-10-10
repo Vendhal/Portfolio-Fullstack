@@ -1,159 +1,91 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import Background from '../components/Background'
 
-// Mock the requestAnimationFrame
-const mockRequestAnimationFrame = vi.fn((callback) => {
-  setTimeout(callback, 16) // 60fps
-})
-
 describe('Background', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    global.requestAnimationFrame = mockRequestAnimationFrame
+    // Clear any previous renders
   })
 
-  it('should render canvas element', () => {
+  it('should render background container', () => {
     render(<Background />)
     
-    const canvas = screen.getByRole('img', { hidden: true })
-    expect(canvas).toBeInTheDocument()
-    expect(canvas.tagName).toBe('CANVAS')
+    const container = screen.getByRole('generic', { hidden: true })
+    expect(container).toBeInTheDocument()
+    expect(container).toHaveClass('bg-effects')
   })
 
-  it('should have correct canvas attributes', () => {
+  it('should render gradient background', () => {
     render(<Background />)
     
-    const canvas = screen.getByRole('img', { hidden: true })
-    expect(canvas).toHaveClass('background-canvas')
-    expect(canvas).toHaveAttribute('aria-hidden', 'true')
+    const gradient = document.querySelector('.bg-gradient')
+    expect(gradient).toBeInTheDocument()
   })
 
-  it('should handle canvas context creation', () => {
-    // Mock canvas context
-    const mockContext = {
-      fillStyle: '',
-      fillRect: vi.fn(),
-      clearRect: vi.fn(),
-      beginPath: vi.fn(),
-      arc: vi.fn(),
-      fill: vi.fn(),
-      closePath: vi.fn(),
+  it('should render orb elements', () => {
+    render(<Background />)
+    
+    const orbs = document.querySelectorAll('.orb')
+    expect(orbs).toHaveLength(5)
+    
+    // Check that all orbs have the correct classes
+    expect(document.querySelector('.orb.o1')).toBeInTheDocument()
+    expect(document.querySelector('.orb.o2')).toBeInTheDocument()
+    expect(document.querySelector('.orb.o3')).toBeInTheDocument()
+    expect(document.querySelector('.orb.o4')).toBeInTheDocument()
+    expect(document.querySelector('.orb.o5')).toBeInTheDocument()
+  })
+
+  it('should have aria-hidden attribute', () => {
+    render(<Background />)
+    
+    const container = screen.getByRole('generic', { hidden: true })
+    expect(container).toHaveAttribute('aria-hidden')
+  })
+
+  it('should have correct container class', () => {
+    render(<Background />)
+    
+    const container = document.querySelector('.bg-effects')
+    expect(container).toBeInTheDocument()
+    expect(container).toHaveClass('bg-effects')
+  })
+
+  it('should render all visual elements', () => {
+    render(<Background />)
+    
+    // Check for main container
+    expect(document.querySelector('.bg-effects')).toBeInTheDocument()
+    
+    // Check for gradient
+    expect(document.querySelector('.bg-gradient')).toBeInTheDocument()
+    
+    // Check for all orbs
+    for (let i = 1; i <= 5; i++) {
+      expect(document.querySelector(`.orb.o${i}`)).toBeInTheDocument()
     }
-
-    const mockGetContext = vi.fn(() => mockContext)
-    HTMLCanvasElement.prototype.getContext = mockGetContext
-
-    render(<Background />)
-    
-    expect(mockGetContext).toHaveBeenCalledWith('2d')
   })
 
-  it('should initialize canvas dimensions', () => {
+  it('should use span elements for orbs', () => {
     render(<Background />)
     
-    const canvas = screen.getByRole('img', { hidden: true })
-    
-    // Canvas should have dimensions set
-    expect(canvas.width).toBeGreaterThan(0)
-    expect(canvas.height).toBeGreaterThan(0)
-  })
-
-  it('should handle window resize events', () => {
-    const originalInnerWidth = window.innerWidth
-    const originalInnerHeight = window.innerHeight
-
-    render(<Background />)
-    
-    // Simulate window resize
-    Object.defineProperty(window, 'innerWidth', {
-      writable: true,
-      configurable: true,
-      value: 1920,
-    })
-    Object.defineProperty(window, 'innerHeight', {
-      writable: true,
-      configurable: true,
-      value: 1080,
-    })
-
-    // Trigger resize event
-    window.dispatchEvent(new Event('resize'))
-    
-    const canvas = screen.getByRole('img', { hidden: true })
-    expect(canvas.width).toBe(1920)
-    expect(canvas.height).toBe(1080)
-
-    // Restore original values
-    Object.defineProperty(window, 'innerWidth', {
-      writable: true,
-      configurable: true,
-      value: originalInnerWidth,
-    })
-    Object.defineProperty(window, 'innerHeight', {
-      writable: true,
-      configurable: true,
-      value: originalInnerHeight,
+    const orbs = document.querySelectorAll('.orb')
+    orbs.forEach(orb => {
+      expect(orb.tagName).toBe('SPAN')
     })
   })
 
-  it('should clean up event listeners on unmount', () => {
-    const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener')
-    
-    const { unmount } = render(<Background />)
-    
-    unmount()
-    
-    expect(removeEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function))
-    
-    removeEventListenerSpy.mockRestore()
-  })
-
-  it('should handle missing canvas context gracefully', () => {
-    // Mock getContext to return null
-    HTMLCanvasElement.prototype.getContext = vi.fn(() => null)
-    
-    // Should not throw an error
-    expect(() => render(<Background />)).not.toThrow()
-  })
-
-  it('should create and animate particles', async () => {
-    const mockContext = {
-      fillStyle: '',
-      fillRect: vi.fn(),
-      clearRect: vi.fn(),
-      beginPath: vi.fn(),
-      arc: vi.fn(),
-      fill: vi.fn(),
-      closePath: vi.fn(),
-    }
-
-    HTMLCanvasElement.prototype.getContext = vi.fn(() => mockContext)
-
+  it('should use div for gradient', () => {
     render(<Background />)
     
-    // Wait for animation frame
-    await new Promise(resolve => setTimeout(resolve, 20))
-    
-    // Verify that drawing operations are called
-    expect(mockContext.clearRect).toHaveBeenCalled()
-    expect(mockContext.fillRect).toHaveBeenCalled()
+    const gradient = document.querySelector('.bg-gradient')
+    expect(gradient.tagName).toBe('DIV')
   })
 
-  it('should use proper CSS positioning', () => {
+  it('should have proper container structure', () => {
     render(<Background />)
     
-    const canvas = screen.getByRole('img', { hidden: true })
-    const computedStyle = getComputedStyle(canvas)
-    
-    // Canvas should be positioned fixed to cover entire viewport
-    expect(canvas).toHaveStyle({
-      position: 'fixed',
-      top: '0',
-      left: '0',
-      width: '100%',
-      height: '100%',
-      'z-index': '-1'
-    })
+    const container = document.querySelector('.bg-effects')
+    expect(container.children).toHaveLength(6) // 1 gradient + 5 orbs
   })
 })
