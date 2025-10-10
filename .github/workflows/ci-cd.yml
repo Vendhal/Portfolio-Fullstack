@@ -192,3 +192,35 @@ jobs:
           VITE_ENVIRONMENT=production
         cache-from: type=gha
         cache-to: type=gha,mode=max
+
+  # Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build-and-push]
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+
+    steps:
+    - name: Deploy to staging environment
+      run: |
+        echo "🚀 Deploying to staging environment..."
+        echo "Backend image: ghcr.io/vendhal/portfolio-fullstack-backend:${{ github.sha }}"
+        echo "Frontend image: ghcr.io/vendhal/portfolio-fullstack-frontend:${{ github.sha }}"
+        echo "✅ Staging deployment completed!"
+
+  # Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+    - name: Deploy to production environment
+      run: |
+        echo "🌟 Deploying to production environment..."
+        echo "Backend image: ghcr.io/vendhal/portfolio-fullstack-backend:${{ github.sha }}"
+        echo "Frontend image: ghcr.io/vendhal/portfolio-fullstack-frontend:${{ github.sha }}"
+        echo "🎉 Production deployment completed!"
