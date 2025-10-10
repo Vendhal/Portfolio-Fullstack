@@ -13,7 +13,7 @@ ENV NODE_ENV=production
 
 # Install dependencies
 COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* ./
-RUN npm ci || npm install
+RUN npm ci --include=dev || npm install
 
 # Copy source code and build
 COPY . .
