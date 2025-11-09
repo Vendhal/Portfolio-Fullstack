@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: portfolio
+data:
+  POSTGRES_DB: "portfolio"
+  POSTGRES_USER: "portfolio_user"
+  POSTGRES_PASSWORD: "your_secure_password"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+  namespace: portfolio
+type: Opaque
+data:
+  # echo -n 'your_secure_password' | base64
+  password: eW91cl9zZWN1cmVfcGFzc3dvcmQ=

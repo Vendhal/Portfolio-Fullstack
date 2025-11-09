@@ -1,0 +1,41 @@
+---
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+      ansible_python_interpreter: "{{ ansible_playbook_python }}"
+  
+  vars:
+    # Kubernetes Configuration
+    k8s_namespace: portfolio
+    k8s_context: docker-desktop
+    
+    # Application Configuration
+    app_name: portfolio
+    backend_image: ghcr.io/vendhal/portfolio-fullstack-backend
+    frontend_image: ghcr.io/vendhal/portfolio-fullstack-frontend
+    image_tag: latest
+    
+    # Database Configuration
+    postgres_user: portfolio_user
+    postgres_password: portfolio_password
+    postgres_db: portfolio
+    
+    # Resource Limits
+    backend_replicas: 2
+    frontend_replicas: 3
+    backend_cpu_request: "500m"
+    backend_cpu_limit: "1"
+    backend_memory_request: "512Mi"
+    backend_memory_limit: "1Gi"
+    frontend_cpu_request: "100m"
+    frontend_cpu_limit: "200m"
+    frontend_memory_request: "128Mi"
+    frontend_memory_limit: "256Mi"
+    
+    # JWT Configuration
+    jwt_secret: "your-jwt-secret-key-here-make-it-very-long-and-secure"
+    
+    # Paths
+    k8s_manifests_dir: "../k8s"
+    project_root: "{{ playbook_dir }}/.."

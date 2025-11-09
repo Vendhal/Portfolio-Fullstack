@@ -1,0 +1,70 @@
+---
+# Kubernetes Configuration
+k8s_namespace: portfolio
+k8s_context: docker-desktop
+
+# Application Configuration
+app_name: portfolio
+backend_image: portfolio-backend
+frontend_image: portfolio-frontend
+image_tag: latest  # Using local images
+
+# Database Configuration
+postgres_user: portfolio_user
+postgres_password: portfolio_password
+postgres_db: portfolio
+postgres_port: 5432
+
+# Resource Configuration
+backend_replicas: 2
+frontend_replicas: 3
+
+# Backend Resources
+backend_cpu_request: "500m"
+backend_cpu_limit: "1"
+backend_memory_request: "512Mi"
+backend_memory_limit: "1Gi"
+
+# Frontend Resources
+frontend_cpu_request: "100m"
+frontend_cpu_limit: "200m"
+frontend_memory_request: "128Mi"
+frontend_memory_limit: "256Mi"
+
+# Database Resources
+postgres_cpu_request: "250m"
+postgres_cpu_limit: "500m"
+postgres_memory_request: "256Mi"
+postgres_memory_limit: "512Mi"
+
+# JWT Configuration
+jwt_secret: "your-jwt-secret-key-here-make-it-very-long-and-secure"
+jwt_expiration: "3600000"
+jwt_refresh_expiration: "604800000"
+
+# CORS Configuration
+cors_allowed_origins: "http://localhost:3000,http://localhost:5173,http://localhost:30080"
+
+# Health Check Configuration
+backend_liveness_delay: 60
+backend_liveness_period: 30
+backend_readiness_delay: 30
+backend_readiness_period: 10
+
+# Ingress Configuration
+enable_ingress: true
+ingress_host: "portfolio.local"
+
+# Persistence Configuration
+enable_persistence: true
+postgres_storage_size: "2Gi"
+postgres_storage_class: "hostpath"
+
+# Deployment Strategy
+deployment_strategy: RollingUpdate
+max_unavailable: 25%
+max_surge: 25%
+
+# Paths (WSL absolute paths)
+k8s_manifests_dir: "/mnt/c/Users/saisa.DESKTOP-IRA1I5U/Desktop/Portfolio-fullstack/k8s"
+project_root: "/mnt/c/Users/saisa.DESKTOP-IRA1I5U/Desktop/Portfolio-fullstack"

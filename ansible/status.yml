@@ -1,0 +1,93 @@
+---
+- name: Check Portfolio Kubernetes Deployment Status
+  hosts: localhost
+  gather_facts: no
+  
+  vars_files:
+    - vars/config.yml
+  
+  tasks:
+    - name: Check if namespace exists
+      command: kubectl get namespace {{ k8s_namespace }}
+      register: namespace_status
+      ignore_errors: yes
+      changed_when: false
+    
+    - name: Display namespace not found message
+      debug:
+        msg: "Namespace '{{ k8s_namespace }}' does not exist. Run 'ansible-playbook deploy.yml' to deploy."
+      when: namespace_status.rc != 0
+    
+    - name: End play if namespace doesn't exist
+      meta: end_play
+      when: namespace_status.rc != 0
+    
+    - name: Get all resources in namespace
+      command: kubectl get all -n {{ k8s_namespace }}
+      register: all_resources
+      changed_when: false
+    
+    - name: Display all resources
+      debug:
+        msg: "{{ all_resources.stdout_lines }}"
+    
+    - name: Get pods status
+      command: kubectl get pods -n {{ k8s_namespace }}
+      register: pods_status
+      changed_when: false
+    
+    - name: Get services status
+      command: kubectl get services -n {{ k8s_namespace }}
+      register: services_status
+      changed_when: false
+    
+    - name: Get deployments status
+      command: kubectl get deployments -n {{ k8s_namespace }}
+      register: deployments_status
+      changed_when: false
+    
+    - name: Check frontend URL
+      command: kubectl get service portfolio-nodeport -n {{ k8s_namespace }} -o jsonpath='{.spec.ports[0].nodePort}'
+      register: frontend_port
+      changed_when: false
+      ignore_errors: yes
+    
+    - name: Display detailed status
+      debug:
+        msg: |
+          ==========================================
+          Portfolio K8s Deployment Status
+          ==========================================
+          
+          📦 PODS:
+          {{ pods_status.stdout }}
+          
+          🌐 SERVICES:
+          {{ services_status.stdout }}
+          
+          🚀 DEPLOYMENTS:
+          {{ deployments_status.stdout }}
+          
+          ==========================================
+          🌐 ACCESS URLs:
+          ==========================================
+          Frontend: http://localhost:{{ frontend_port.stdout | default('30080') }}
+          Backend API: http://localhost:{{ frontend_port.stdout | default('30080') }}/api/v1
+          Health Check: http://localhost:{{ frontend_port.stdout | default('30080') }}/api/v1/actuator/health
+          ==========================================
+    
+    - name: Check for unhealthy pods
+      shell: kubectl get pods -n {{ k8s_namespace }} | grep -v Running | grep -v Completed | tail -n +2
+      register: unhealthy_pods
+      ignore_errors: yes
+      changed_when: false
+    
+    - name: Display warning if unhealthy pods found
+      debug:
+        msg: |
+          ⚠️  WARNING: Unhealthy pods detected!
+          {{ unhealthy_pods.stdout }}
+          
+          Check logs with:
+          kubectl logs -f <pod-name> -n {{ k8s_namespace }}
+      when: unhealthy_pods.stdout != ""

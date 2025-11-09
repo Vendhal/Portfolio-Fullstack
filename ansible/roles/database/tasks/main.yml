@@ -1,0 +1,38 @@
+---
+- name: Apply PostgreSQL Config and Secret
+  command: kubectl apply -f {{ k8s_manifests_dir }}/postgres-config.yaml
+  args:
+    chdir: "{{ project_root }}"
+  register: postgres_config
+  changed_when: "'created' in postgres_config.stdout or 'configured' in postgres_config.stdout"
+
+- name: Apply init-db ConfigMap
+  command: kubectl apply -f {{ k8s_manifests_dir }}/init-db-config.yaml
+  args:
+    chdir: "{{ project_root }}"
+  register: init_db_config
+  changed_when: "'created' in init_db_config.stdout or 'configured' in init_db_config.stdout"
+
+- name: Deploy PostgreSQL
+  command: kubectl apply -f {{ k8s_manifests_dir }}/postgres.yaml
+  args:
+    chdir: "{{ project_root }}"
+  register: postgres_deployment
+  changed_when: "'created' in postgres_deployment.stdout or 'configured' in postgres_deployment.stdout"
+
+- name: Wait for PostgreSQL to be ready
+  command: kubectl wait --for=condition=ready pod -l app=postgres -n {{ k8s_namespace }} --timeout=120s
+  register: postgres_ready
+  retries: 3
+  delay: 10
+  until: postgres_ready.rc == 0
+  changed_when: false
+
+- name: Check PostgreSQL service
+  command: kubectl get service postgres-service -n {{ k8s_namespace }}
+  register: postgres_service
+  changed_when: false
+
+- name: Display PostgreSQL status
+  debug:
+    msg: "PostgreSQL database is running and ready"

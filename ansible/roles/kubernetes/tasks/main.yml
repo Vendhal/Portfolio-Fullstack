@@ -1,0 +1,21 @@
+---
+- name: Create Kubernetes namespace
+  command: kubectl create namespace {{ k8s_namespace }}
+  register: namespace_created
+  failed_when: 
+    - namespace_created.rc != 0
+    - "'AlreadyExists' not in namespace_created.stderr"
+  changed_when: namespace_created.rc == 0
+
+- name: Label namespace
+  command: kubectl label namespace {{ k8s_namespace }} app={{ app_name }} --overwrite
+  changed_when: true
+
+- name: Check if namespace exists
+  command: kubectl get namespace {{ k8s_namespace }}
+  register: namespace_check
+  changed_when: false
+
+- name: Display namespace status
+  debug:
+    msg: "Namespace '{{ k8s_namespace }}' is ready"

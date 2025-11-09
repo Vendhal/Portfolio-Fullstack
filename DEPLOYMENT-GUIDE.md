@@ -1,5 +1,26 @@
 # 🚀 Portfolio Full-Stack Deployment Guide
 
+## ⚡ FASTEST WAY - Ansible + Kubernetes (NEW!)
+
+### Windows ONE-CLICK Deploy
+
+```bash
+cd ansible
+quick-deploy.bat  # Double-click this file!
+```
+
+**What it does:**
+- ✅ Checks prerequisites
+- ✅ Deploys to Kubernetes
+- ✅ Auto-scales (2 backend + 3 frontend pods)
+- ✅ Production-ready in 5-10 minutes
+
+**Access:** http://localhost:30080
+
+📖 **Full Guide:** See `ANSIBLE-DEPLOYMENT.md`
+
+---
+
 ## Quick Start Deployment
 
 ### Option 1: Using Deployment Scripts (Recommended)

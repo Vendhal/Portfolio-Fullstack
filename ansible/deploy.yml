@@ -1,0 +1,123 @@
+---
+- name: Deploy Portfolio Full-Stack Application to Kubernetes
+  hosts: localhost
+  gather_facts: yes
+  
+  vars_files:
+    - vars/config.yml
+  
+  pre_tasks:
+    - name: Display deployment information
+      debug:
+        msg: |
+          ======================================
+          Portfolio K8s Deployment with Ansible
+          ======================================
+          Namespace: {{ k8s_namespace }}
+          Backend Image: {{ backend_image }}:{{ image_tag }}
+          Frontend Image: {{ frontend_image }}:{{ image_tag }}
+          Backend Replicas: {{ backend_replicas }}
+          Frontend Replicas: {{ frontend_replicas }}
+          ======================================
+    
+    - name: Check if Docker is running
+      command: docker info
+      register: docker_status
+      ignore_errors: yes
+      changed_when: false
+    
+    - name: Fail if Docker is not running
+      fail:
+        msg: "Docker is not running! Please start Docker Desktop first."
+      when: docker_status.rc != 0
+    
+    - name: Check if kubectl is available
+      command: kubectl version --client
+      register: kubectl_status
+      ignore_errors: yes
+      changed_when: false
+    
+    - name: Fail if kubectl is not available
+      fail:
+        msg: "kubectl is not installed or not in PATH!"
+      when: kubectl_status.rc != 0
+    
+    - name: Check Kubernetes cluster connectivity
+      command: kubectl cluster-info
+      register: k8s_cluster
+      ignore_errors: yes
+      changed_when: false
+    
+    - name: Display cluster status
+      debug:
+        msg: "{{ k8s_cluster.stdout_lines }}"
+      when: k8s_cluster.rc == 0
+    
+    - name: Wait for Kubernetes cluster to be ready
+      command: kubectl get nodes
+      register: k8s_nodes
+      until: k8s_nodes.rc == 0
+      retries: 10
+      delay: 5
+      changed_when: false
+  
+  roles:
+    - role: kubernetes
+      tags: ['kubernetes', 'k8s', 'namespace']
+    
+    - role: database
+      tags: ['database', 'postgres', 'db']
+    
+    - role: backend
+      tags: ['backend', 'api']
+    
+    - role: frontend
+      tags: ['frontend', 'ui', 'web']
+  
+  post_tasks:
+    - name: Wait for all pods to be ready
+      command: kubectl wait --for=condition=ready pod --all -n {{ k8s_namespace }} --timeout=300s
+      register: pods_ready
+      ignore_errors: yes
+    
+    - name: Display deployment status
+      command: kubectl get all -n {{ k8s_namespace }}
+      register: deployment_status
+      changed_when: false
+    
+    - name: Show deployment results
+      debug:
+        msg: "{{ deployment_status.stdout_lines }}"
+    
+    - name: Get frontend service URL
+      command: kubectl get service portfolio-nodeport -n {{ k8s_namespace }} -o jsonpath='{.spec.ports[0].nodePort}'
+      register: frontend_port
+      changed_when: false
+      ignore_errors: yes
+    
+    - name: Display access information
+      debug:
+        msg: |
+          ========================================
+          ✅ DEPLOYMENT COMPLETE!
+          ========================================
+          
+          🌐 Frontend: http://localhost:{{ frontend_port.stdout | default('30080') }}
+          🔧 Backend API: http://localhost:{{ frontend_port.stdout | default('30080') }}/api/v1
+          📊 Health Check: http://localhost:{{ frontend_port.stdout | default('30080') }}/api/v1/actuator/health
+          
+          📝 Useful Commands:
+          - View pods: kubectl get pods -n {{ k8s_namespace }}
+          - View logs: kubectl logs -f deployment/backend -n {{ k8s_namespace }}
+          - Delete all: kubectl delete namespace {{ k8s_namespace }}
+          
+          ========================================
+      when: pods_ready.rc == 0
+    
+    - name: Show troubleshooting info if deployment failed
+      debug:
+        msg: |
+          ⚠️  Some pods may not be ready yet.
+          Run: kubectl get pods -n {{ k8s_namespace }}
+          Check logs: kubectl logs -f deployment/backend -n {{ k8s_namespace }}
+      when: pods_ready.rc != 0

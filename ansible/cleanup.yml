@@ -1,0 +1,54 @@
+---
+- name: Clean up Portfolio Kubernetes Deployment
+  hosts: localhost
+  gather_facts: no
+  
+  vars_files:
+    - vars/config.yml
+  
+  tasks:
+    - name: Display cleanup information
+      debug:
+        msg: |
+          ==========================================
+          Cleaning up Portfolio K8s Deployment
+          ==========================================
+          This will delete:
+          - Namespace: {{ k8s_namespace }}
+          - All pods, services, and deployments
+          - ConfigMaps and Secrets
+          ==========================================
+    
+    - name: Confirm cleanup
+      pause:
+        prompt: "Are you sure you want to delete everything? (Press ENTER to continue, Ctrl+C to cancel)"
+      tags:
+        - prompt
+    
+    - name: Delete namespace (this deletes everything inside)
+      command: kubectl delete namespace {{ k8s_namespace }}
+      register: cleanup_result
+      ignore_errors: yes
+    
+    - name: Display cleanup status
+      debug:
+        msg: "{{ cleanup_result.stdout }}"
+      when: cleanup_result.rc == 0
+    
+    - name: Wait for namespace deletion
+      command: kubectl get namespace {{ k8s_namespace }}
+      register: namespace_check
+      until: namespace_check.rc != 0
+      retries: 30
+      delay: 2
+      ignore_errors: yes
+      changed_when: false
+    
+    - name: Cleanup complete
+      debug:
+        msg: |
+          ==========================================
+          ✅ CLEANUP COMPLETE!
+          ==========================================
+          All resources have been removed.
+          ==========================================

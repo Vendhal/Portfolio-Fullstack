@@ -1,0 +1,61 @@
+---
+- name: Build and Push Portfolio Docker Images
+  hosts: localhost
+  gather_facts: yes
+  
+  vars_files:
+    - vars/config.yml
+  
+  tasks:
+    - name: Display build information
+      debug:
+        msg: |
+          ==========================================
+          Building Docker Images
+          ==========================================
+          Backend Image: {{ backend_image }}:{{ image_tag }}
+          Frontend Image: {{ frontend_image }}:{{ image_tag }}
+          ==========================================
+    
+    - name: Build backend Docker image
+      command: docker build -t {{ backend_image }}:{{ image_tag }} .
+      args:
+        chdir: "{{ project_root }}/backend"
+      register: backend_build
+    
+    - name: Display backend build result
+      debug:
+        msg: "✅ Backend image built successfully"
+    
+    - name: Build frontend Docker image
+      command: docker build -t {{ frontend_image }}:{{ image_tag }} .
+      args:
+        chdir: "{{ project_root }}/frontend"
+      register: frontend_build
+    
+    - name: Display frontend build result
+      debug:
+        msg: "✅ Frontend image built successfully"
+    
+    - name: List built images
+      command: docker images | grep portfolio-fullstack
+      register: images_list
+      changed_when: false
+      ignore_errors: yes
+    
+    - name: Display built images
+      debug:
+        msg: |
+          ==========================================
+          ✅ BUILD COMPLETE!
+          ==========================================
+          {{ images_list.stdout }}
+          ==========================================
+          
+          To push images to registry:
+          docker push {{ backend_image }}:{{ image_tag }}
+          docker push {{ frontend_image }}:{{ image_tag }}
+          
+          To deploy to Kubernetes:
+          ansible-playbook deploy.yml
+          ==========================================

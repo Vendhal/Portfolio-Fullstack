@@ -1,0 +1,61 @@
+---
+- name: Check if frontend image exists locally
+  command: docker images {{ frontend_image }}:{{ image_tag }} --format "{{'{{'}}.Repository{{'}}'}}"
+  register: frontend_image_check
+  changed_when: false
+  ignore_errors: yes
+
+- name: Build frontend Docker image if not exists
+  command: docker build -t {{ frontend_image }}:{{ image_tag }} .
+  args:
+    chdir: "{{ project_root }}/frontend"
+  when: frontend_image_check.stdout == ""
+  register: frontend_build
+
+- name: Display frontend image build status
+  debug:
+    msg: "Frontend image built successfully"
+  when: frontend_build.changed
+
+- name: Deploy frontend application
+  command: kubectl apply -f {{ k8s_manifests_dir }}/frontend.yaml
+  args:
+    chdir: "{{ project_root }}"
+  register: frontend_deployment
+  changed_when: "'created' in frontend_deployment.stdout or 'configured' in frontend_deployment.stdout"
+
+- name: Wait for frontend pods to be created
+  command: kubectl get pods -l app=frontend -n {{ k8s_namespace }}
+  register: frontend_pods
+  until: frontend_pods.stdout != ""
+  retries: 10
+  delay: 5
+  changed_when: false
+
+- name: Wait for frontend to be ready
+  command: kubectl wait --for=condition=ready pod -l app=frontend -n {{ k8s_namespace }} --timeout=180s
+  register: frontend_ready
+  changed_when: false
+
+- name: Check frontend pod status
+  command: kubectl get pods -l app=frontend -n {{ k8s_namespace }}
+  register: frontend_status
+  changed_when: false
+
+- name: Display frontend status
+  debug:
+    msg: "{{ frontend_status.stdout_lines }}"
+
+- name: Check frontend service
+  command: kubectl get service frontend-service -n {{ k8s_namespace }}
+  register: frontend_service
+  changed_when: false
+
+- name: Check NodePort service
+  command: kubectl get service portfolio-nodeport -n {{ k8s_namespace }}
+  register: nodeport_service
+  changed_when: false
+
+- name: Display frontend service info
+  debug:
+    msg: "Frontend is available via NodePort service"

@@ -1,0 +1,68 @@
+---
+- name: Check if backend image exists locally
+  command: docker images {{ backend_image }}:{{ image_tag }} --format "{{'{{'}}.Repository{{'}}'}}"
+  register: backend_image_check
+  changed_when: false
+  ignore_errors: yes
+
+- name: Build backend Docker image if not exists
+  command: docker build -t {{ backend_image }}:{{ image_tag }} .
+  args:
+    chdir: "{{ project_root }}/backend"
+  when: backend_image_check.stdout == ""
+  register: backend_build
+
+- name: Display backend image build status
+  debug:
+    msg: "Backend image built successfully"
+  when: backend_build.changed
+
+- name: Deploy backend application
+  command: kubectl apply -f {{ k8s_manifests_dir }}/backend.yaml
+  args:
+    chdir: "{{ project_root }}"
+  register: backend_deployment
+  changed_when: "'created' in backend_deployment.stdout or 'configured' in backend_deployment.stdout"
+
+- name: Wait for backend pods to be created
+  command: kubectl get pods -l app=backend -n {{ k8s_namespace }}
+  register: backend_pods
+  until: backend_pods.stdout != ""
+  retries: 10
+  delay: 5
+  changed_when: false
+
+- name: Wait for backend to be ready (this may take a few minutes)
+  command: kubectl wait --for=condition=ready pod -l app=backend -n {{ k8s_namespace }} --timeout=300s
+  register: backend_ready
+  ignore_errors: yes
+  changed_when: false
+
+- name: Check backend pod status
+  command: kubectl get pods -l app=backend -n {{ k8s_namespace }}
+  register: backend_status
+  changed_when: false
+
+- name: Display backend status
+  debug:
+    msg: "{{ backend_status.stdout_lines }}"
+
+- name: Get backend logs if not ready
+  command: kubectl logs -l app=backend -n {{ k8s_namespace }} --tail=50
+  register: backend_logs
+  when: backend_ready.rc != 0
+  changed_when: false
+
+- name: Display backend logs if failed
+  debug:
+    msg: "{{ backend_logs.stdout_lines }}"
+  when: backend_ready.rc != 0
+
+- name: Check backend service
+  command: kubectl get service backend-service -n {{ k8s_namespace }}
+  register: backend_service
+  changed_when: false
+
+- name: Display backend service info
+  debug:
+    msg: "Backend API service is available at backend-service:8080"

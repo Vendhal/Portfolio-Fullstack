@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-db-config
+  namespace: portfolio
+data:
+  init.sql: |
+    -- Create users table
+    CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        full_name VARCHAR(255),
+        bio TEXT,
+        avatar_url VARCHAR(255),
+        github_url VARCHAR(255),
+        linkedin_url VARCHAR(255),
+        twitter_url VARCHAR(255),
+        website_url VARCHAR(255),
+        location VARCHAR(255),
+        skills TEXT[],
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Create projects table
+    CREATE TABLE IF NOT EXISTS projects (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        long_description TEXT,
+        technologies TEXT[],
+        github_url VARCHAR(255),
+        live_url VARCHAR(255),
+        image_url VARCHAR(255),
+        featured BOOLEAN DEFAULT FALSE,
+        status VARCHAR(50) DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Create experiences table
+    CREATE TABLE IF NOT EXISTS experiences (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        company VARCHAR(255) NOT NULL,
+        position VARCHAR(255) NOT NULL,
+        description TEXT,
+        start_date DATE,
+        end_date DATE,
+        current_job BOOLEAN DEFAULT FALSE,
+        location VARCHAR(255),
+        company_url VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Create education table
+    CREATE TABLE IF NOT EXISTS education (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        institution VARCHAR(255) NOT NULL,
+        degree VARCHAR(255) NOT NULL,
+        field_of_study VARCHAR(255),
+        start_date DATE,
+        end_date DATE,
+        current BOOLEAN DEFAULT FALSE,
+        description TEXT,
+        gpa VARCHAR(10),
+        location VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Insert sample data
+    INSERT INTO users (username, email, password, full_name, bio) 
+    VALUES ('admin', 'admin@portfolio.com', '$2a$10$example', 'Portfolio Admin', 'Welcome to my portfolio!') 
+    ON CONFLICT (username) DO NOTHING;
