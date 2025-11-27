@@ -72,35 +72,44 @@ const memoryStore = (() => {
   }
 })()
 
-function ensureLocalStorage(): Storage | typeof memoryStore {
+// Ensure tests always have a working localStorage; avoid clobbering if the real one exists.
+const globalLocalStorage: Storage | typeof memoryStore = (() => {
+  if (process.env.NODE_ENV === 'test') {
+    ;(globalThis as any).localStorage = memoryStore as any
+    return memoryStore
+  }
   const ls = (globalThis as any).localStorage
   if (ls && typeof ls.getItem === 'function') {
     return ls
   }
-  return memoryStore
-}
+  Object.defineProperty(globalThis, 'localStorage', {
+    value: memoryStore as any,
+    writable: true,
+    configurable: true,
+    enumerable: true,
+  })
+  return (globalThis as any).localStorage
+})()
 
 const storage = {
   get: (key: string) => {
     try {
-      const ls = ensureLocalStorage() as any
-      return ls.getItem?.(key) ?? null
+      const value = (globalLocalStorage as any).getItem?.(key)
+      return value === undefined ? null : value
     } catch {
       return null
     }
   },
   set: (key: string, value: string) => {
     try {
-      const ls = ensureLocalStorage() as any
-      ls.setItem?.(key, value)
+      ;(globalLocalStorage as any).setItem?.(key, value)
     } catch {
       /* ignore */
     }
   },
   remove: (key: string) => {
     try {
-      const ls = ensureLocalStorage() as any
-      ls.removeItem?.(key)
+      ;(globalLocalStorage as any).removeItem?.(key)
     } catch {
       /* ignore */
     }
