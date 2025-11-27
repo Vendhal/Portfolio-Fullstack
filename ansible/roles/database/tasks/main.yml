@@ -1,22 +1,16 @@
 ---
 - name: Apply PostgreSQL Config and Secret
-  command: kubectl apply -f {{ k8s_manifests_dir }}/postgres-config.yaml
-  args:
-    chdir: "{{ project_root }}"
+  command: kubectl apply -f {{ project_root }}/k8s/postgres-config.yaml
   register: postgres_config
   changed_when: "'created' in postgres_config.stdout or 'configured' in postgres_config.stdout"
 
 - name: Apply init-db ConfigMap
-  command: kubectl apply -f {{ k8s_manifests_dir }}/init-db-config.yaml
-  args:
-    chdir: "{{ project_root }}"
+  command: kubectl apply -f {{ project_root }}/k8s/init-db-config.yaml
   register: init_db_config
   changed_when: "'created' in init_db_config.stdout or 'configured' in init_db_config.stdout"
 
 - name: Deploy PostgreSQL
-  command: kubectl apply -f {{ k8s_manifests_dir }}/postgres.yaml
-  args:
-    chdir: "{{ project_root }}"
+  command: kubectl apply -f {{ project_root }}/k8s/postgres.yaml
   register: postgres_deployment
   changed_when: "'created' in postgres_deployment.stdout or 'configured' in postgres_deployment.stdout"
 

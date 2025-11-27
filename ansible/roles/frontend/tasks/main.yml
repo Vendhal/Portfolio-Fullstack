@@ -18,9 +18,7 @@
   when: frontend_build.changed
 
 - name: Deploy frontend application
-  command: kubectl apply -f {{ k8s_manifests_dir }}/frontend.yaml
-  args:
-    chdir: "{{ project_root }}"
+  command: kubectl apply -f {{ project_root }}/k8s/frontend.yaml
   register: frontend_deployment
   changed_when: "'created' in frontend_deployment.stdout or 'configured' in frontend_deployment.stdout"
 

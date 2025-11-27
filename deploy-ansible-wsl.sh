@@ -26,14 +26,18 @@ if [ ! -d "$WORKSPACE" ]; then
     exit 1
 fi
 
-cd "$WORKSPACE/ansible"
+# Ensure Ansible uses the repo config/inventory and isn't ignored
+chmod go-w "$WORKSPACE/ansible" "$WORKSPACE" >/dev/null 2>&1 || true
+export ANSIBLE_CONFIG="$WORKSPACE/ansible/ansible.cfg"
+INVENTORY="$WORKSPACE/ansible/inventory.yml"
+PLAYBOOK="$WORKSPACE/ansible/deploy.yml"
 
 echo ""
 echo "[INFO] Starting Ansible deployment..."
 echo ""
 
 # Run Ansible playbook
-ansible-playbook deploy.yml
+ansible-playbook -i "$INVENTORY" "$PLAYBOOK"
 
 if [ $? -eq 0 ]; then
     echo ""

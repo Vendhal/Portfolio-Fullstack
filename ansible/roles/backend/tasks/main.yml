@@ -18,9 +18,7 @@
   when: backend_build.changed
 
 - name: Deploy backend application
-  command: kubectl apply -f {{ k8s_manifests_dir }}/backend.yaml
-  args:
-    chdir: "{{ project_root }}"
+  command: kubectl apply -f {{ project_root }}/k8s/backend.yaml
   register: backend_deployment
   changed_when: "'created' in backend_deployment.stdout or 'configured' in backend_deployment.stdout"
 
